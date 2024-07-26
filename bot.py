@@ -17,24 +17,21 @@ async def on_ready():
 async def on_message_delete(message):
   if message.author == client.user:
     return
-  await message.channel.send(f"I saw what you did there, <@{message.author.id}> :FiniiOgey:")
+  await message.channel.send(f"I saw what you did there, <@{message.author.id}> <:FiniiOgey:1227633857382322248>")
 
 
 
 @client.event
 async def on_message(message):
-
   if message.author == client.user:
       return
-  if message.author.name == "shas7459" or message.author.name == "bergjudge":
-    print("TestTst")
+  if message.author.name == "shas7459":
     await message.channel.purge(limit=2, check=lambda msg: not msg.pinned)
   else:
-    await message.add_reaction(":FiniiOgey:")
+    await message.add_reaction("<:FiniiOgey:1227633857382322248>")
   
   
   if(message.content == "!clear"):
-    print("temp1")
     await message.channel.purge(limit=1000, check=lambda msg: not msg.pinned)
 
   # await message.channel.send(f"Message Content: {message.content}")
