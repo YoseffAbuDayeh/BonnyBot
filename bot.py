@@ -25,9 +25,10 @@ async def on_message_delete(message):
 async def on_message(message):
   if message.author == client.user:
       return
-  if message.author.name == "shas7459":
-    await message.channel.purge(limit=2, check=lambda msg: not msg.pinned)
-  else:
+  if message.author.name == "shas7459" or message.author.name == "shawnywrestling":
+    await message.channel.purge(limit=1, check=lambda msg: not msg.pinned)
+  
+  if(message.channel.name != "general" and message.channel.name != "roles" and message.channel.name != "roles-without-ping"):
     await message.add_reaction("<:FiniiOgey:1227633857382322248>")
   
   
