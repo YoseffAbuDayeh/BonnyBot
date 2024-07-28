@@ -1,5 +1,4 @@
 import discord # type: ignore
-import os
 import random
 
 
@@ -23,9 +22,11 @@ async def on_message_delete(message):
 
 @client.event
 async def on_message(message):
+  if((random.random() *100) < 3):
+    await message.add_reaction("<:ThisTBH:1266540721377247272>")
   if message.author == client.user:
       return
-  if message.author.name == "shas7459" or message.author.name == "shawnywrestling":
+  if message.author.name == "shawnywrestling":
     await message.channel.purge(limit=1, check=lambda msg: not msg.pinned)
   
   if(message.channel.name != "general" and message.channel.name != "roles" and message.channel.name != "roles-without-ping"):
@@ -36,6 +37,6 @@ async def on_message(message):
     await message.channel.purge(limit=1000, check=lambda msg: not msg.pinned)
 
   # await message.channel.send(f"Message Content: {message.content}")
-  
+
 
 client.run("MTIxMzYwNjM5NzQwMTYzNjg3NA.GX3LVs.GoPVFfD_4U6cMQ7Yk0dM16vV08GtrFeIcmAAQs")
