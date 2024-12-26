@@ -119,6 +119,8 @@ async def role(ctx):
     
     await member.add_roles(role)
     await ctx.send(f"Added role {role.name} to {member.mention} ({member}).")
+    LogEvent(ctx.author, f"Gave the role {role_name} to {member}")
+
 
   except Exception as e:
     await ctx.send(f"An error occurred: {e}")
@@ -148,6 +150,7 @@ async def unrole(ctx):
 
     await member.remove_roles(role)
     await ctx.send(f"Removed role {role.name} to {member.mention} ({member}).")
+    LogEvent(ctx.author, f"Removed the role {role_name} from {member}")
 
   except Exception as e:
     await ctx.send(f"An error occurred: {e}")
@@ -158,7 +161,7 @@ async def clear(ctx):
   await ctx.channel.purge(limit=1000, check=lambda msg: not msg.pinned)
   logs_channel = client.get_channel(1307031962057183282)
   if logs_channel:
-      await logs_channel.send(f"<@{ctx.author.id}> ({ctx.author}) cleared the channel.")
+      await logs_channel.send(f"<@{ctx.author.id}> ({ctx.author}) cleared the channel <#{ctx.channel.id}>.")
 
 
 
@@ -169,6 +172,11 @@ async def DMsTexts(message):
 
 
 
+
+#To do: Incorporate the Logging of the deleting messages to this/make a overloading/dispatch for this.
+async def LogEvent(user, message):
+  logs_channel = client.get_channel(1307031962057183282);  
+  logs_channel.send(f"{user}: {message}")
 
 
 
