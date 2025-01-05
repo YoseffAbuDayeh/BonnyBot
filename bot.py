@@ -95,7 +95,7 @@ async def yo(ctx): #To change!!!
 
 
 @client.command()
-@channel("irl-commands")
+@channel("bot")
 async def role(ctx):
   try:
     words = ctx.message.content.split()
@@ -106,6 +106,11 @@ async def role(ctx):
 
     user_mention = words[1]
     role_name = words[2]
+    if(role_name == "Mod"):
+      await ctx.send("I can't give you mod perms")
+      return
+    elif(role_name == "Bot"):
+      await ctx.send("I don't wanna, this is MY unique role")
 
     member = discord.utils.get(ctx.guild.members, mention=user_mention)
     if not member:
@@ -119,7 +124,41 @@ async def role(ctx):
     
     await member.add_roles(role)
     await ctx.send(f"Added role {role.name} to {member.mention} ({member}).")
-    LogEvent(ctx.author, f"Gave the role {role_name} to {member}")
+    await LogEvent(ctx.author, f"Gave the role {role_name} to {member}")
+
+
+  except Exception as e:
+    await ctx.send(f"An error occurred: {e}")
+
+
+@client.command()
+@channel("irl-commands")
+async def role(ctx):
+  try:
+    words = ctx.message.content.split()
+
+    if len(words) != 3:
+      await ctx.send("Invalid format! Use: `@user role_name`")
+      return
+
+    user_mention = words[1]
+    role_name = words[2]
+    if(role_name == "Bot"):
+      await ctx.send("I don't wanna, this is MY unique role")
+
+    member = discord.utils.get(ctx.guild.members, mention=user_mention)
+    if not member:
+      await ctx.send("User not found in this server!")
+      return
+
+    role = get(ctx.guild.roles, name=role_name)
+    if not role:
+      await ctx.send(f"Role {role_name} not found!")
+      return
+    
+    await member.add_roles(role)
+    await ctx.send(f"Added role {role.name} to {member.mention} ({member}).")
+    await LogEvent(ctx.author, f"Gave the role {role_name} to {member}")
 
 
   except Exception as e:
@@ -137,6 +176,8 @@ async def unrole(ctx):
 
     user_mention = words[1]
     role_name = words[2]
+    if(role_name == "Bot"):
+      await ctx.send("I don't wanna, this is MY unique role")
 
     member = discord.utils.get(ctx.guild.members, mention=user_mention)
     if not member:
@@ -150,10 +191,49 @@ async def unrole(ctx):
 
     await member.remove_roles(role)
     await ctx.send(f"Removed role {role.name} to {member.mention} ({member}).")
-    LogEvent(ctx.author, f"Removed the role {role_name} from {member}")
+    await LogEvent(ctx.author, f"Removed the role {role_name} from {member}")
 
   except Exception as e:
     await ctx.send(f"An error occurred: {e}")
+
+
+
+@client.command()
+@channel("Bot")
+async def unrole(ctx):
+  try:
+    words = ctx.message.content.split()
+
+    if len(words) != 3:
+      await ctx.send("Invalid format! Use: `@user role_name`")
+      return
+
+    user_mention = words[1]
+    role_name = words[2]
+    if(role_name == "Bot"):
+      await ctx.send("I don't wanna, this is MY unique role")
+    elif(role_name == "Mod"):
+      await ctx.send("I cannot give you mod perms")
+
+    member = discord.utils.get(ctx.guild.members, mention=user_mention)
+    if not member:
+      await ctx.send("User not found in this server!")
+      return
+
+    role = get(ctx.guild.roles, name=role_name)
+    if not role:
+      await ctx.send(f"Role {role_name} not found!")
+      return
+
+    await member.remove_roles(role)
+    await ctx.send(f"Removed role {role.name} to {member.mention} ({member}).")
+    await LogEvent(ctx.author, f"Removed the role {role_name} from {member}")
+
+  except Exception as e:
+    await ctx.send(f"An error occurred: {e}")
+
+
+
 
 
 @client.command()
@@ -176,7 +256,7 @@ async def DMsTexts(message):
 #To do: Incorporate the Logging of the deleting messages to this/make a overloading/dispatch for this.
 async def LogEvent(user, message):
   logs_channel = client.get_channel(1307031962057183282);  
-  logs_channel.send(f"{user}: {message}")
+  await logs_channel.send(f"<@{user.id}> ({user}): {message}")
 
 
 
