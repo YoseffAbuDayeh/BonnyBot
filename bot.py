@@ -84,7 +84,7 @@ async def make(ctx):
         await new_text.send("If you want to delete the channel then do ~delete!")
         await new_text.send("Note: Only the maker of the channel has access to Pin, and delete messages!!!")
         await ctx.send(f"Channel '{channel_name}' created successfully!")
-        await LogEvent(ctx.message.author, "Made a channel: " + channel_name)
+        await LogEvent(ctx.author, f"Made a channel: {channel_name}")
     except Exception as e:
         await ctx.send(f"An error occurred: {e}")
 
@@ -121,7 +121,7 @@ async def remove(ctx, user: discord.Member):
         else:
             await ctx.send("No matching voice channel found.")
 
-        await LogEvent(ctx.message.author, "Removed " + user.name + " from the " + ctx.channel + " channel.")
+        await LogEvent(ctx.author, f"Removed {user.name} from the {ctx.channel} channel.")
     except Exception as e:
         await ctx.send(f"An error occurred: {e}")
 
@@ -160,7 +160,7 @@ async def delete(ctx):
         else:
             await ctx.send("No matching voice channel found.")
 
-        await LogEvent(ctx.message.author, "Deleted the channel " + ctx.channel)        
+        await LogEvent(ctx.author, f"Deleted the channel {ctx.channel}")        
 
         # Delete the text channel
         await text_channel.delete()
@@ -202,7 +202,7 @@ async def add(ctx, user: discord.Member):
 
         await ctx.send(f"{user.mention} has been added to the channel!")
 
-        await LogEvent(ctx.message.author, "Added " + user + " to the " + ctx.channel + " channel.")
+        await LogEvent(ctx.author, "Added {user} to the {ctx.channel} channel.")
 
     except Exception as e:
         await ctx.send(f"An error occurred: {e}")
