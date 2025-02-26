@@ -53,9 +53,13 @@ async def on_message(message):
     param:
     message: the message, this contains information all from the contents inside the message to the type of message.
     '''
-    if (random.random() * 500) < 3:
+    if (random.random() * 800) < 3:
         emoji = discord.PartialEmoji(name="ThisTBH", id=1266540721377247272)
         await message.add_reaction(emoji) #Funny emote
+    if (random.random() * 500) < 3:
+        emoji = discord.PartialEmoji(name="FiniiOgey", id=1227633857382322248)
+        await message.add_reaction(emoji)
+
 
     if message.author == client.user:
         return 
@@ -66,9 +70,6 @@ async def on_message(message):
     if not message.guild:
         #If it's a DM then sends the message to a channel so I can message back in-case of an error
         await DMsTexts(message)
-
-    emoji = discord.PartialEmoji(name="FiniiOgey", id=1227633857382322248)
-    await message.add_reaction(emoji)
 
     await client.process_commands(message)
 
@@ -221,31 +222,32 @@ async def delete(ctx):
 
 
 
+@channel("make-channel")
 @client.command()
-async def add(ctx, user: discord.Member):
+async def add(ctx, user: discord.Member, channel: discord.TextChannel):
     '''
-    This method will add someone to the channel
-    
+    This method will add someone to the specified channel.
+
     params:
     ctx: This has all the data of the message, from the contents to the information about the channel.
-    user: This has all the data of the user to be added to the channel
+    user: This has all the data of the user to be added to the channel.
+    channel: The text channel where the user should be added.
     '''
     try:
-        if not ctx.channel:
-            await ctx.send("This command can only be used in a server text channel.")
+        if not channel:
+            await ctx.send("You must specify a valid text channel.")
             return
 
-        text = ctx.channel
-        if text.overwrites_for(user).read_messages:
-            await ctx.send(f"{user.mention} already has access to this channel.")
+        if channel.overwrites_for(user).read_messages:
+            await ctx.send(f"{user.mention} already has access to {channel.mention}.")
             return
 
-        voice_channel = discord.utils.get(ctx.guild.voice_channels, name=ctx.channel.name)
+        voice_channel = discord.utils.get(ctx.guild.voice_channels, name=channel.name)
         if not voice_channel:
             await ctx.send("No matching voice channel found.")
             return
 
-        overwrite = text.overwrites_for(ctx.message.author)
+        overwrite = channel.overwrites_for(ctx.message.author)
         overwrite.read_messages = True
         overwrite.attach_files = True
         overwrite.send_voice_messages = True
@@ -254,18 +256,18 @@ async def add(ctx, user: discord.Member):
         overwrite.stream = True
         overwrite.speak = True 
         overwrite.send_messages = True 
-        await text.set_permissions(user, overwrite=overwrite)
 
+        await channel.set_permissions(user, overwrite=overwrite)
         await voice_channel.set_permissions(user, overwrite=overwrite)
 
-        await ctx.send(f"{user.mention} has been added to the channel!")
+        await channel.send(f"{user.mention} has been added to {channel.mention}!")
 
-        await LogEvent(ctx.author, f"Added {user} to the {ctx.channel} channel.")
-
+        await LogEvent(ctx.author, f"Added {user} to {channel.mention}.")
+        await ctx.channel.purge(limit=1, check=lambda msg: not msg.pinned)
 
     except Exception as e:
         await ctx.send(f"So something happened... Ask a mod for help :)") 
-        LogEvent(ctx.author, f"An error occured on channel <#{ctx.channel.id}>, the user did \"{ctx.message.content}\". Information about the error: {e}")
+        LogEvent(ctx.author, f"An error occurred in {channel.mention}, the user did \"{ctx.message.content}\". Error info: {e}")
 
 
 @client.command()
