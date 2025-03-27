@@ -4,9 +4,15 @@ from discord.ext import commands
 import random
 import os
 from dotenv import load_dotenv
+import cohere
+from collections import deque
+
 
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix="~", intents=intents)
+load_dotenv()
+cohere_key = os.getenv("KEY")
+co = cohere.Client(cohere_key)
 
 
 # Decorators for channel checking
@@ -66,6 +72,23 @@ async def on_message(message):
 
     if message.author.name == "shas7459": #He cannot talk :)
         await message.channel.purge(limit=2, check=lambda msg: not msg.pinned)
+
+    if random.random() < 0.2:  
+
+        chat_history = deque(maxlen=3) 
+        chat_history.append({"role": "USER", "message": message.content})
+        response = co.chat(
+            message=message.content,
+            model="command-r-plus",
+            chat_history=[],  
+            temperature=0.8, 
+            preamble="You are \"Bonny\" a goofy, slightly dumb (sometimes misspells stuff), and friendly AI assistant. "
+                     "You like to say silly things, and sometimes misunderstand things in a funny way. "
+                     "You never take things too seriously. Keep responses short and lighthearted! You also don't know you are a bot rather think you are a living being."
+        )
+
+        await message.channel.send(response.text.strip())
+
 
     if not message.guild:
         #If it's a DM then sends the message to a channel so I can message back in-case of an error
@@ -399,6 +422,5 @@ async def LogEvent(user, message):
     await logs_channel.send(f"<@{user.id}>: {message}")
 
 
-load_dotenv()
 discordToken = os.getenv("TOKEN")
 client.run(discordToken)
