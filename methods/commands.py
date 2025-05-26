@@ -1,8 +1,8 @@
 from discord.ext import commands
 from util import decorators
-import method
 import discord  # type: ignore
 from discord.utils import get
+from methods.method import LogEvent
 
 class Command(commands.Cog):
     def __init__(self, bot):
@@ -10,27 +10,25 @@ class Command(commands.Cog):
 
     @commands.command()
     async def clear(self, ctx):
-        '''
+        """
         This command is going to clear the messages of a channel.
 
         params:
         ctx: This has all the data of the message, from the contents to the information about the channel.
-        '''
+        """
         await ctx.channel.purge(limit=1000, check=lambda msg: not msg.pinned)
-        logs_channel = self.bot.get_channel(1307031962057183282)
-        if logs_channel:
-            await logs_channel.send(f"<@{ctx.author.id}> cleared the channel <#{ctx.channel.id}>.")
-    
-    
+
+        await LogEvent(ctx.author,self.bot,  f"cleared the channel <#{ctx.channel.id}>.")
+
     @commands.command()
     @decorators.channel("make-channel")
     async def make(self, ctx):
-        '''
+        """
         This command makes a channel in the same category the message was sent.
 
         params:
         ctx: This has all the data of the message. From the message itself to where it was sent
-        '''
+        """
         try:
             words = ctx.message.content.split()
 
@@ -70,20 +68,20 @@ class Command(commands.Cog):
             await new_text.send("If you want to delete the channel then do ~delete!")
             await new_text.send("Note: Only the maker of the channel has access to Pin, and delete messages!!!")
             await ctx.send(f"Channel '{channel_name}' created successfully!")
-            await method.LogEvent(ctx.author, f"Made a channel: {channel_name}")
+            await LogEvent(ctx.author, self.bot, f"Made a channel: {channel_name}")
         except Exception as e:
             await ctx.send(f"So something happened... Ask a mod for help :)") #BREAKING OUT OF CHARACTER IS UNACCEPTABLE!!!
-            method.LogEvent(ctx.author, f"An error occured on channel <#{ctx.channel.id}>, the user did \"{ctx.message.content}\". Information about the error: {e}")
+            await LogEvent(ctx.author, self.bot,f"An error occurred on channel <#{ctx.channel.id}>, the user did \"{ctx.message.content}\". Information about the error: {e}")
 
     @commands.command()
-    async def remove(ctx, user: discord.Member):
-        '''
+    async def remove(self, ctx, user: discord.Member):
+        """
         This function will remove a user from the channel. Only available to the private channels!
 
         params:
         ctx: This has all the data of the message, from the contents to the information about the channel.
         user: This has the data of the user to be removed from the channel
-        '''
+        """
         try:
             
             if ctx.channel.category.name != "Private Channels":
@@ -118,21 +116,21 @@ class Command(commands.Cog):
             else:
                 await ctx.send("No matching voice channel found.")
 
-            await method.LogEvent(ctx.author, f"Removed {user.name} from the {ctx.channel} channel.")
+            await LogEvent(ctx.author, self.bot, f"Removed {user.name} from the {ctx.channel} channel.")
         except Exception as e:
             await ctx.send(f"So something happened... Ask a mod for help :)") 
-            method.LogEvent(ctx.author, f"An error occured on channel <#{ctx.channel.id}>, the user did \"{ctx.message.content}\". Information about the error: {e}")
+            await LogEvent(ctx.author, self.bot, f"An error occurred on channel <#{ctx.channel.id}>, the user did \"{ctx.message.content}\". Information about the error: {e}")
 
 
 
     @commands.command()
-    async def delete(ctx):
-        '''
+    async def delete(self, ctx):
+        """
         This function will delete the channel it is currently on.
         
         params:
         ctx: This has all the data of the message, from the contents to the information about the channel.
-        '''
+        """
         try:
             if ctx.channel.category.name != "Private Channels":
                 await ctx.send("This command cannot be used outside of the private channels category.")
@@ -160,73 +158,77 @@ class Command(commands.Cog):
             else:
                 await ctx.send("No matching voice channel found.")
 
-            await method.LogEvent(ctx.author, f"Deleted the channel {ctx.channel}")        
-
             await text_channel.delete()
+
+            await LogEvent(ctx.author, self.bot, f"Deleted the channel {ctx.channel}")
+
 
     
         except Exception as e:
             await ctx.send(f"So something happened... Ask a mod for help :)") 
-            method.LogEvent(ctx.author, f"An error occured on channel <#{ctx.channel.id}>, the user did \"{ctx.message.content}\". Information about the error: {e}")
+            await LogEvent(ctx.author, self.bot,  f"An error occurred on channel <#{ctx.channel.id}>, the user did \"{ctx.message.content}\". Information about the error: {e}")
 
 
 
-    @decorators.channel("make-channel")
     @commands.command()
-    async def add(ctx, user: discord.Member, channel: discord.TextChannel):
-        '''
-        This method will add someone to the specified channel.
+    async def add(ctx, user: discord.Member):
+        """
+        This method will add someone to the channel
 
         params:
         ctx: This has all the data of the message, from the contents to the information about the channel.
-        user: This has all the data of the user to be added to the channel.
-        channel: The text channel where the user should be added.
-        '''
+        user: This has all the data of the user to be added to the channel
+        """
         try:
-            if not channel:
-                await ctx.send("You must specify a valid text channel.")
+            if not ctx.bot.Channel:
+                await ctx.send("This command can only be used in a server text channel.")
                 return
 
-            if channel.overwrites_for(user).read_messages:
-                await ctx.send(f"{user.mention} already has access to {channel.mention}.")
+            text = ctx.channel
+            if text.overwrites_for(user).read_messages:
+                await ctx.send(f"{user.mention} already has access to this channel.")
                 return
 
-            voice_channel = discord.utils.get(ctx.guild.voice_channels, name=channel.name)
+            voice_channel = next(
+                (ch for ch in ctx.guild.voice_channels if ch.name.lower() == ctx.channel.name.lower()),
+                None
+            )
             if not voice_channel:
                 await ctx.send("No matching voice channel found.")
+                ctx.send(voice_channel)
                 return
 
-            overwrite = channel.overwrites_for(ctx.message.author)
+            overwrite = text.overwrites_for(ctx.message.author)
             overwrite.read_messages = True
             overwrite.attach_files = True
             overwrite.send_voice_messages = True
             overwrite.create_polls = True
-            overwrite.connect = True  
+            overwrite.connect = True
             overwrite.stream = True
-            overwrite.speak = True 
-            overwrite.send_messages = True 
+            overwrite.speak = True
+            overwrite.send_messages = True
+            await text.set_permissions(user, overwrite=overwrite)
 
-            await channel.set_permissions(user, overwrite=overwrite)
             await voice_channel.set_permissions(user, overwrite=overwrite)
 
-            await channel.send(f"{user.mention} has been added to {channel.mention}!")
+            await ctx.send(f"{user.mention} has been added to the channel!")
 
-            await method.LogEvent(ctx.author, f"Added {user} to {channel.mention}.")
-            await ctx.channel.purge(limit=1, check=lambda msg: not msg.pinned)
+            await LogEvent(ctx.author, f"Added {user} to the {ctx.channel} channel.")
+
 
         except Exception as e:
-            await ctx.send(f"So something happened... Ask a mod for help :)") 
-            method.LogEvent(ctx.author, f"An error occurred in {channel.mention}, the user did \"{ctx.message.content}\". Error info: {e}")
-
+            await ctx.send(f"So something happened... Ask a mod for help :)")
+            LogEvent(ctx.author,
+                     f"An error occurred on channel <#{ctx.channel.id}>, the user did \"{ctx.message.content}\". Information about the error: {e}")
 
     @commands.command()
-    async def role(ctx):
-        '''
-        This command will give a role to the user. User is supposed to say role, @ the user and then type the name of the role afterwards
+    async def role(self, ctx):
+        """
+        This command will give a role to the user. User is supposed to say role, @ the user and then type the name of the role afterward
         
         params:
         ctx: This has all the data of the message, from the contents to the information about the channel.
-        '''
+        """
         try:
             words = ctx.message.content.split()
             if len(words) != 3:
@@ -258,21 +260,21 @@ class Command(commands.Cog):
             else:
                 await ctx.send("This command is not allowed in this channel.")
 
-            await method.LogEvent(ctx.author, f"Gave the role {role_name} to {member}")
+            await LogEvent(ctx.author, self.bot, f"Gave the role {role_name} to {member}")
 
         except Exception as e:
             await ctx.send(f"So something happened... Ask a mod for help :)") 
-            method.LogEvent(ctx.author, f"An error occured on channel <#{ctx.channel.id}>, the user did \"{ctx.message.content}\". Information about the error: {e}")
+            await LogEvent(ctx.author, self.bot, f"An error occurred on channel <#{ctx.channel.id}>, the user did \"{ctx.message.content}\". Information about the error: {e}")
 
 
     @commands.command()
-    async def unrole(ctx):
-        '''
-        This command will take a role to the user. User is supposed to say unrole, @ the user and then type the name of the role afterwards
+    async def unrole(self, ctx):
+        """
+        This command will take a role to the user. User is supposed to say un-role, @ the user and then type the name of the role afterward
         
         params:
         ctx: This has all the data of the message, from the contents to the information about the channel.
-        '''
+        """
         try:
             words = ctx.message.content.split()
             if len(words) != 3:
@@ -303,15 +305,15 @@ class Command(commands.Cog):
             else:
                 await ctx.send("This command is not allowed in this channel.")
 
-            await method.LogEvent(ctx.author, f"Removed the role {role_name} from {member}")
+            await LogEvent(ctx.author, self.bot, f"Removed the role {role_name} from {member}")
 
         except Exception as e:
             await ctx.send(f"So something happened... Ask a mod for help :)") 
-            method.LogEvent(ctx.author, f"An error occured on channel <#{ctx.channel.id}>, the user did \"{ctx.message.content}\". Information about the error: {e}")
+            await LogEvent(ctx.author, self.bot,f"An error occurred on channel <#{ctx.channel.id}>, the user did \"{ctx.message.content}\". Information about the error: {e}")
 
 
 
 
 
-def setup(bot):
-    bot.add_cog(Command(bot))
+async def setup(bot):
+    await bot.add_cog(Command(bot))
