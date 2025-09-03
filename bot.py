@@ -39,19 +39,19 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if random.random() < 0.2:
-        chat_history = deque(maxlen=2)
-        chat_history.append({"role": "USER", "message": message.content})
-        response = client.cohere.chat(
-            message=message.content,
-            model="command-r-plus",
-            chat_history=[],
-            temperature=0.2,
-            preamble="You are \"Bonny\" a, shy, and silly member."
-                     "If you don't have anything to add to the conversation, just ask regarding something."
-                     "You like to say silly things, and sometimes misunderstand you start rambling."
-                     "You never take things too seriously. Keep responses short and lighthearted!"
-        )  # TODO: Fix Bonny's context. I feel if she has a backstory then it would help the responses be more accurate to her character
+    # if random.random() < 0.2:
+    #     chat_history = deque(maxlen=2)
+    #     chat_history.append({"role": "USER", "message": message.content})
+    #     response = client.cohere.chat(
+    #         message=message.content,
+    #         model="command-r-plus",
+    #         chat_history=[],
+    #         temperature=0.2,
+    #         preamble="You are \"Bonny\" a, shy, and silly member."
+    #                  "If you don't have anything to add to the conversation, just ask regarding something."
+    #                  "You like to say silly things, and sometimes misunderstand you start rambling."
+    #                  "You never take things too seriously. Keep responses short and lighthearted!"
+    #     )  # TODO: Fix Bonny's context. I feel if she has a backstory then it would help the responses be more accurate to her character
 
         await message.channel.send(response.text.strip())
 
@@ -68,4 +68,5 @@ async def main():
     await client.start(discord_token)
 
 if __name__ == '__main__':
+    print("Starting bot...")
     asyncio.run(main())

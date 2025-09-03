@@ -168,24 +168,19 @@ class Command(commands.Cog):
             await ctx.send(f"So something happened... Ask a mod for help :)") 
             await LogEvent(ctx.author, self.bot,  f"An error occurred on channel <#{ctx.channel.id}>, the user did \"{ctx.message.content}\". Information about the error: {e}")
 
-
-
     @commands.command()
-    async def add(ctx, user: discord.Member):
+    async def add(self, ctx, user: discord.Member):
         """
-        This method will add someone to the channel
-
-        params:
-        ctx: This has all the data of the message, from the contents to the information about the channel.
-        user: This has all the data of the user to be added to the channel
+        Add someone to the text and voice channel with the same name.
         """
         try:
-            if not ctx.bot.Channel:
+            if not isinstance(ctx.channel, discord.TextChannel):
                 await ctx.send("This command can only be used in a server text channel.")
                 return
 
             text = ctx.channel
-            if text.overwrites_for(user).read_messages:
+            overwrite = text.overwrites_for(user)
+            if overwrite.read_messages:
                 await ctx.send(f"{user.mention} already has access to this channel.")
                 return
 
@@ -195,31 +190,30 @@ class Command(commands.Cog):
             )
             if not voice_channel:
                 await ctx.send("No matching voice channel found.")
-                ctx.send(voice_channel)
                 return
 
-            overwrite = text.overwrites_for(ctx.message.author)
-            overwrite.read_messages = True
-            overwrite.attach_files = True
-            overwrite.send_voice_messages = True
-            overwrite.create_polls = True
-            overwrite.connect = True
-            overwrite.stream = True
-            overwrite.speak = True
-            overwrite.send_messages = True
-            await text.set_permissions(user, overwrite=overwrite)
+            perm_overwrite = discord.PermissionOverwrite(
+                read_messages=True,
+                send_messages=True,
+                attach_files=True,
+                speak=True,
+                connect=True,
+                stream=True,
+                send_voice_messages=True,
+                create_polls=True
+            )
 
-            await voice_channel.set_permissions(user, overwrite=overwrite)
+            await text.set_permissions(user, overwrite=perm_overwrite)
+            await voice_channel.set_permissions(user, overwrite=perm_overwrite)
 
             await ctx.send(f"{user.mention} has been added to the channel!")
-
-            await LogEvent(ctx.author, f"Added {user} to the {ctx.channel} channel.")
-
+            await LogEvent(ctx.author, self.bot, f"Added {user} to the {ctx.channel} channel.")
 
         except Exception as e:
-            await ctx.send(f"So something happened... Ask a mod for help :)")
-            LogEvent(ctx.author,
-                     f"An error occurred on channel <#{ctx.channel.id}>, the user did \"{ctx.message.content}\". Information about the error: {e}")
+            print(e)
+            await ctx.send(f"Something went wrong. Ask a mod for help :)")
+            await LogEvent(ctx.author, self.bot,
+                           f"An error occurred on channel <#{ctx.channel.id}>, user ran \"{ctx.message.content}\". Error: {e}")
 
     @commands.command()
     async def role(self, ctx):
@@ -250,6 +244,7 @@ class Command(commands.Cog):
             if not role:
                 await ctx.send(f"Role {role_name} not found!")
                 return
+
 
             if ctx.channel.name == "bot":
                 await member.add_roles(role)
