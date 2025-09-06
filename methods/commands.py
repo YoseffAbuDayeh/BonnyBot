@@ -1,6 +1,6 @@
 from discord.ext import commands
 from util import decorators
-import discord  # type: ignore
+import discord
 from discord.utils import get
 from methods.method import LogEvent
 
