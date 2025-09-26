@@ -26,15 +26,37 @@ async def on_message(message):
     param:
     message: the message, this contains information all from the contents inside the message to the type of message.
     '''
+
+    if message.author.id == 975013661452140554:
+        print("Deleting Ryan's message: " + message.content)
+        await message.delete()
+        return
+
     if random.random() < 0.1:
         emoji = discord.PartialEmoji(name="ThisTBH", id=1266540721377247272)
         await message.add_reaction(emoji)  # Funny emote
     if random.random() < 0.2:
         emoji = discord.PartialEmoji(name="FiniiOgey", id=1227633857382322248)
         await message.add_reaction(emoji)
+    if random.random() < 0.1:
+        emoji = discord.PartialEmoji(name="vycerage128", id=1227633746111365201)
+        await message.add_reaction(emoji)
+    if random.random() < 0.1:
+        emoji = discord.PartialEmoji(name="octaviaderp", id=1227633669351411816)
+        await message.add_reaction(emoji)
+    if random.random() < 0.1:
+        emoji = discord.PartialEmoji(name="octaviaderp", id=1227633669351411816)
+        await message.add_reaction(emoji)
+    if random.random() < 0.1:
+        emoji = discord.PartialEmoji(name="BonnyCry", id=1420996430843347084)
+        await message.add_reaction(emoji)
+    if random.random() < 0.1:
+        emoji = discord.PartialEmoji(name="BonnyPeek", id=1420997790791761932)
+        await message.add_reaction(emoji)
 
     if message.author == client.user:
         return
+
 
     await client.process_commands(message)
 
@@ -45,6 +67,7 @@ async def main():
     await client.load_extension("methods.ai")
     discord_token = os.getenv("TOKEN")
     await client.start(discord_token)
+
 
 if __name__ == '__main__':
     print("Starting bot...")
