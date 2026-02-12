@@ -7,4 +7,5 @@ So far what it can do:
 - Delete channels
 - Clear a channel
 - Remove people from channels
-  
+- Have a conversation with people using her own AI
+- Keep track of tournament set's to automate streaming

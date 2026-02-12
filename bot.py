@@ -4,6 +4,7 @@ from discord.ext import commands as command
 import random
 import os
 from dotenv import load_dotenv
+from methods import method
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -27,17 +28,19 @@ async def on_message(message):
     message: the message, this contains information all from the contents inside the message to the type of message.
     '''
 
+    if message.author == client.user:
+        return
+
     if message.author.id == 975013661452140554:
-        print("Deleting Ryan's message: " + message.content)
+        await method.LogEvent(message.author, client, "Deleting Ryan's message: " + message.content)
         await message.delete()
         return
 
-    if random.random() < 0.5:
+    if random.random() < 0.3:
         emojis = [
             discord.PartialEmoji(name="ThisTBH", id=1266540721377247272),
             discord.PartialEmoji(name="FiniiOgey", id=1227633857382322248),
             discord.PartialEmoji(name="vycerage128", id=1227633746111365201),
-            discord.PartialEmoji(name="octaviaderp", id=1227633669351411816),
             discord.PartialEmoji(name="octaviaderp", id=1227633669351411816),
             discord.PartialEmoji(name="BonnyCry", id=1420996430843347084),
         ]
@@ -47,8 +50,6 @@ async def on_message(message):
         chosen = random.choice(emojis + [default_emoji])
         await message.add_reaction(chosen)
 
-    if message.author == client.user:
-        return
 
 
     await client.process_commands(message)
